@@ -1,0 +1,9 @@
+---
+title: "About this blog"
+description: |
+  a repository of statitical analysis / data science things learnt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```

@@ -1,0 +1,148 @@
+---
+title: "Linear Regression Modelling & Prediction"
+description: |
+  Using linear regression to predict house prices using Kaggle AMES Data Set
+author:
+  - name: Jamaal Roach
+    url: https://example.com/norajones
+    affiliation: None
+    affiliation_url: https://example.com/spacelysprokets
+date: 04-02-2021
+preview: \house.png
+baseurl: https://jamaalroach.com
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r cars}
+library(tidyverse)
+library(statsr)
+library(dplyr)
+library(BAS)
+library(broom)
+library(recipes) #for preprocesing data
+library(naniar)  # for assessing and vicualising NAs/ missing data
+library(ggthemes)
+library(janitor) # for cleaning variable names
+library(tidymodels)
+```
+
+
+
+```{r pressure, echo=FALSE}
+#load training and test data and create age variable 
+
+train_data<-read.csv("train.csv")
+test_data<-read.csv("test.csv")
+train_data$age<-2021-train_data$YearBuilt
+test_data$age<-2021-test_data$YearBuilt
+
+```
+
+
+Variables with the most NA 
+```{r}
+gg_miss_var(train_data%>%select_if(~sum(is.na(.))>0))+theme_fivethirtyeight()
+```
+
+```{r}
+all_data<-bind_rows(train_data, test_data)%>%clean_names()
+```
+
+
+
+```{r}
+
+#preprocessing
+
+ames_recipe<- all_data %>%
+  recipe(sale_price ~x1st_flr_sf + lot_area + overall_qual + overall_cond + 
+           age + exter_qual + bedroom_abv_gr + garage_cars + central_air + ms_zoning + 
+           neighborhood + condition1+ bldg_type + house_style + bsmt_qual + exter_cond + 
+           bsmt_fin_sf1 + heating + kitchen_qual+ fireplaces + sale_condition) %>%
+  step_log(sale_price) %>%  #sets log transformation for variables
+  step_modeimpute(all_nominal()) %>% # imputes mode for missing observations for all nominal variables
+  step_dummy(all_nominal()) %>% #creates dummy (binary term) variables for levels of nominal variables (character or factors)
+  step_meanimpute(all_predictors())%>% #substitues missing values of numerical independent variables for the training data average of the variable
+  step_normalize(all_predictors()) %>% # normalises numeric data to stand normal distribution i.e mean =0, sd = 1
+  prep(training = all_data)
+  
+
+
+```
+
+
+```{r}
+ames_recipe
+```
+
+
+```{r}
+all_data2<-juice(ames_recipe) # saves preprocessed dataset
+
+```
+
+
+
+
+
+```{r}
+train_index <- seq_len(nrow(train_data)) #sets index of first number of rows euqlling original training data 
+train_data2<-all_data2[train_index,] # dataframe of original trainign data after preprocessing
+test_data2<-all_data2[-train_index,]# dataframe of original testing data after preprocessing
+
+
+```
+
+```{r}
+
+## linear regression and model fitting 
+
+lm_model<-
+  linear_reg()%>%
+  set_engine("lm")
+
+lm_form_fit<-lm_model%>%
+  fit(sale_price ~., data=train_data2)
+
+```
+
+
+```{r}
+lm_form_fit
+```
+
+
+
+
+
+```{r}
+##prediction
+
+result<-predict(lm_form_fit, test_data2)
+result$SalePrice<-exp(result$.pred)
+```
+
+
+```{r}
+submission<-read.csv("sample_submission.csv")
+submission$SalePrice<-result$SalePrice
+write.csv(submission, "submission.csv", row.names = FALSE)
+```
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+  <channel>
+    <title>Wha De R</title>
+    <link>https://jamaalroach.com</link>
+    <atom:link href="https://jamaalroach.com/index.xml" rel="self" type="application/rss+xml"/>
+    <description>JRxDATA
+</description>
+    <generator>Distill</generator>
+    <lastBuildDate>Fri, 02 Apr 2021 00:00:00 +0000</lastBuildDate>
+    <item>
+      <title>K Means Clustering</title>
+      <dc:creator>Jamaal Roach</dc:creator>
+      <link>https://jamaalroach.com/posts/k_means_clustering</link>
+      <description>Using k means clsutering to see which countris vote similarly in the UN general assembly</description>
+      <guid>https://jamaalroach.com/posts/k_means_clustering</guid>
+      <pubDate>Fri, 02 Apr 2021 00:00:00 +0000</pubDate>
+      <media:content url="https://jamaalroach.com/posts/k_means_clustering/\bloc_plot.png" medium="image" type="image/png" width="3300" height="2550"/>
+    </item>
+    <item>
+      <title>Linear Regression Modelling &amp; Prediction</title>
+      <dc:creator>Jamaal Roach</dc:creator>
+      <link>https://jamaalroach.com/posts/prediction_linear_regression</link>
+      <description>Using linear regression to predict house prices using Kaggle AMES Data Set</description>
+      <guid>https://jamaalroach.com/posts/prediction_linear_regression</guid>
+      <pubDate>Fri, 02 Apr 2021 00:00:00 +0000</pubDate>
+      <media:content url="https://jamaalroach.com/posts/prediction_linear_regression/\house.png" medium="image" type="image/png" width="576" height="357"/>
+    </item>
+    <item>
+      <title>Welcome to My Blog</title>
+      <dc:creator>Nora Jones</dc:creator>
+      <link>https://jamaalroach.com/posts/welcome</link>
+      <description>Welcome to our new blog, My Blog. We hope you enjoy 
+reading what we have to say!</description>
+      <guid>https://jamaalroach.com/posts/welcome</guid>
+      <pubDate>Fri, 02 Apr 2021 00:00:00 +0000</pubDate>
+    </item>
+  </channel>
+</rss>

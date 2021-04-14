@@ -1,0 +1,213 @@
+---
+title: "K Means Clustering"
+description: |
+  Using k means clsutering to see which countris vote similarly in the UN general assembly
+preview: \bloc_plot.png
+author:
+  - name: Jamaal Roach
+    url: 
+    affiliation:
+    affiliation_url: 
+catgory: 
+  - Unsupervised Learning
+date: 04-02-2021
+
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# UNSUPERVISED LEARNING 
+
+using UN votes package
+
+
+```{r cars}
+
+
+library(tidyverse)
+library(unvotes)
+library(cluster)
+library(factoextra)
+library(ggthemes)
+library(ggrepel)
+library(rnaturalearth)
+library(sf)
+library(countrycode)
+
+
+```
+
+
+
+```{r pressure, echo=FALSE}
+votes<-un_votes
+roll<-un_roll_calls
+issue<-un_roll_call_issues
+issue<-issue[!duplicated(issue[,1]),]  #
+
+vote_data<-left_join(votes, roll, "rcid")
+vote_data<-left_join(vote_data, issue, "rcid")
+
+
+vote_data<-vote_data%>%mutate(vote_n=match(vote, c("no", "abstain","yes")))
+vote_data<-vote_data%>%filter(issue!="NA")
+
+vote_data<-vote_data%>%filter(date>"1999-12-31")%>%select(country,rcid,  vote_n)
+
+
+
+
+```
+## K MEANS CLUSTERING
+
+
+Things to note 
+
+1. clustering is on numerical data only
+2. data needs to be in a wide format.
+3. scale date to normal distribution
+4. 
+
+
+
+
+```{r}
+# data needs to be ina  wide format
+cluster_data<-vote_data%>%pivot_wider(names_from = rcid, values_from = vote_n, values_fill = 0, names_prefix="rcid_") 
+
+
+#data needs to be all numerical , country variable changed to a rowname
+cluster_data<-column_to_rownames(cluster_data, var="country") 
+
+
+#scaling data to have a standard nor mal distribution i.e mean = 0, var = 1. required for clustering algorithm
+cluster_data<-scale(cluster_data) 
+
+
+#run K means algorithm 
+set.seed(0)
+vote_cluster<-kmeans(cluster_data, 3, nstart = 20)
+
+
+
+
+```
+
+
+
+
+```{r}
+
+
+
+fviz_cluster(
+  vote_cluster,
+  data = cluster_data,
+  geom = "point",
+  ellipse = FALSE,
+  show.clust.cent = FALSE,
+  shape=1,
+  pointsize = 2.5,
+  alpha = .6,
+  
+)+
+  #geom_point( colour=as.factor(v$cari),
+  #fill=as.factor(v$cari))+
+  #geom_mark_ellipse(aes(group=cluster),colour="grey")+
+  geom_text_repel(label=rownames(cluster_data),  hjust="inward")+
+  labs(title="TEST", caption = "UNVOTES")+
+  theme_fivethirtyeight()+
+  coord_cartesian(clip = "off")+
+  theme(plot.title.position = "panel")
+  
+  
+```
+
+
+```{r}
+cluster_data<-as.data.frame(cluster_data)
+cluster_data$cluster<-vote_cluster$cluster
+plot_data<-cluster_data%>%select(cluster)
+plot_data$country<-rownames(plot_data)
+plot_data$cluster<-as.factor(plot_data$cluster)
+plot_data$region<-plot_data$country
+
+
+
+## get natural earth mapping data in dataframe format
+
+world_ne<-ne_countries(scale="medium", returnclass = "sf")   
+
+
+#uses country code package to get country 1so2 code , required to merge with natural earth mapping data
+
+plot_data$iso_a2<-countrycode(plot_data$country, "country.name", "iso2c") 
+
+#merges mapping data with plotting data
+plot_data<-merge(world_ne, plot_data, "iso_a2") 
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+bloc_plot<-
+  ggplot(plot_data)+
+  geom_sf(aes(fill=cluster),colour="#2a3135", alpha=.6, size=.4)+
+  coord_sf()+
+  theme_map()+
+  labs(title = "VOTING BLOCS",
+       subtitle = "Cluster analysis of UN General Assembly votes 2000 - 2019",
+       caption="#TidyTuesday | Source: UN Votes, Harvard Dataverse \n @jamaalroach")+
+  scale_fill_discrete(name="BLOCS Include:", 
+                      labels=c("\n Most of the world\n ", 
+                                "Canada, Europe, \nAustrailia, Japan, New Zealand...",
+                               "\nUS, Central Africa, \n Israel, Macedonia..."),
+                      type =c("#6da7de","#dee000", "#63193b" ) 
+                      )+
+  theme(legend.background = element_rect(fill="#2a3135", colour = "#2a3135"),
+        legend.text = element_text(colour="#dddddd", size=10),
+        legend.key = element_rect(fill="#2a3135"),
+        legend.title = element_text(colour = "#dddddd", size=10
+        ),
+        plot.title.position = "plot",
+        plot.subtitle = element_text(colour="#dddddd", size=14),
+        plot.caption = element_text(colour="#dddddd", size=8),
+        plot.caption.position = "plot",
+        plot.title = element_text(face="bold", colour="#dddddd", size = 16),
+        panel.background = element_rect(fill="#2a3135",colour="#2a3135"),
+        plot.background = element_rect(fill="#2a3135", colour="#2a3135"),
+        plot.margin = margin(25,25,10,25))
+
+
+ggsave(bloc_plot, filename = "bloc_plot.png", units = "in", width = 11, height = 8.5)
+
+
+
+```
+![what](\bloc_plot.png)
+
+
